@@ -1,0 +1,184 @@
+﻿<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title> Тренировка по теме "Системы счисления" </title>
+    <script type="text/javascript" src="jquery/jquery.js"></script>
+    <script type="text/javascript" src="jquery/jquery.cookie.js"></script>
+    <script type="text/javascript" src="./task_description.js"></script>
+    <script type="text/javascript" src="./works.js"></script>
+    <script>
+      var task_type;
+      function showOneOfWork(w) {
+        if (w == null || w == undefined)
+          return;
+        content = document.getElementById("content");
+        content.innerHTML = "";
+        back_href = document.createElement("a");
+        back_href.href = "main.html";
+        back_href.innerHTML = "На главную";
+        content.appendChild(back_href);
+        content.appendChild(document.createElement("br"));
+        content.appendChild(document.createElement("br"));
+        s_t_el = document.createElement("span");
+        s_t_el.innerHTML = "Время начала: " + new Date(w.start_at);
+        e_t_el = document.createElement("span");
+        e_t_el.innerHTML = "Время окончания: " + new Date(w.end_at);
+        content.appendChild(s_t_el);
+        content.appendChild(document.createElement("br"));
+        content.appendChild(e_t_el);
+        content.appendChild(document.createElement("br"));
+        
+        o_n_el = document.createElement("span");
+        o_n_el.innerHTML = "Ограничения числа: " + ((w.config.n == undefined)?"По умолчанию":w.config.n);
+        o_1_el = document.createElement("span");
+        o_1_el.innerHTML = "Ограничения исходной системы счисления: " + ((w.config.o1 == undefined)?"По умолчанию":w.config.o1);
+        o_2_el = document.createElement("span");
+        o_2_el.innerHTML = "Ограничения конечной системы счисления: " + ((w.config.o2 == undefined)?"По умолчанию":w.config.o2);
+        content.appendChild(o_n_el);
+        content.appendChild(document.createElement("br"));
+        content.appendChild(o_1_el);
+        content.appendChild(document.createElement("br"));
+        content.appendChild(o_2_el);
+        content.appendChild(document.createElement("br"));
+        tt = new TaskDescription(arr[w.name], w.config);
+        table = document.createElement("table");
+        table.appendChild(tt.get_table_header());
+        for (var j = 0; j < w.tasks.length; j++) {
+          table.appendChild(tt.get_task_table_view(w.tasks[j]));
+        }
+        content.appendChild(table);
+      }
+      
+      function new_task(tt, tsk) {
+        content = document.getElementById("content");
+        content.innerHTML = "";
+        if (tsk == null || tsk == undefined)
+        {
+          tsk = tt.gen_task();
+          addToLastWork(tsk);
+        }
+        content.appendChild(tt.gen_form(tsk));
+        
+        nextButton = document.createElement("button");
+        nextButton.innerHTML = "Следующий вопрос";
+        nextButton.onclick = function() {
+          tsk = tt.get_ans_from_form(tsk, content);
+          tsk.result = tt.check(tsk);
+          changeLastTaskInLastWork(tsk);
+          new_task(tt);
+        }
+        
+        endButton = document.createElement("button");
+        endButton.innerHTML = "Закончить тест";
+        endButton.onclick = function() {
+          tsk = tt.get_ans_from_form(tsk, content);
+          tsk.result = tt.check(tsk);
+          changeLastTaskInLastWork(tsk);
+          endLastWork();
+          showOneOfWork(getLastWork());
+        }
+        
+        content.appendChild(nextButton);
+        content.appendChild(endButton);
+      }
+      
+      function showListOfWorks() {
+        content = document.getElementById("content");
+        content.innerHTML = "";
+        back_href = document.createElement("a");
+        back_href.href = "main.html";
+        back_href.innerHTML = "На главную";
+        content.appendChild(back_href);
+        content.appendChild(document.createElement("br"));
+        content.appendChild(document.createElement("br"));
+        wl = $.cookie("workList");
+        if (wl == null || wl == undefined)
+          return;
+        wl = JSON.parse(wl);
+        for (var i = 0; i < wl.length; i++) {
+          a = document.createElement("a");
+          a.href="#";
+          a.work=JSON.stringify(wl[i]);
+          a.innerHTML = task_types.find(function (q) { return q.task_file == wl[i].name;}).name + "   [" + new Date(wl[i].start_at) + "]";
+          a.onclick = function() {
+            w = JSON.parse(this.work);
+            showOneOfWork(w);
+          }
+          content.appendChild(a);
+          delButton = document.createElement("button");
+          delButton.num = i;
+          delButton.innerHTML = "Удалить";
+          delButton.onclick = function() {
+            if (!confirm("Вы уверены, что хотите удалить результаты этой работы?"))
+              return;
+            wl = JSON.parse($.cookie("workList"));
+            wl.splice(this.num, 1);
+            $.cookie("workList", JSON.stringify(wl));
+            showListOfWorks();
+          }
+          content.appendChild(delButton);
+          content.appendChild(document.createElement("br"));
+        }
+      }
+      
+      function check_for_open_work() {
+        
+        w = getLastWork();
+        if (w == undefined || w == null || !(w.end_at == null || w.end_at == undefined))
+          return;
+        task_type = new TaskDescription(arr[w.name], w.config);
+        ans = w.tasks[w.tasks.length - 1].answer;
+        if (ans == null || ans == undefined)
+          new_task(task_type, w.tasks[w.tasks.length - 1]);
+        else
+          new_task(task_type);
+      }
+      
+      $(function (){
+        $.getJSON("./tasks.json", function (data)
+        {
+          task_types = data;
+          u = document.getElementById("list_of_task");
+          u.innerHTML = "";
+          arr = {};
+          for (var i = 0; i < task_types.length; i++)
+          { 
+            f = function (task){
+              arr[this.url] = task;
+            };
+            jQuery.ajaxSetup({async:false});
+            $.get(task_types[i].task_file, f, "text");
+            jQuery.ajaxSetup({async:true});
+            l = document.createElement("li");
+            a = document.createElement("a");
+            a.innerHTML = task_types[i].name;
+            a.cur_task = i;
+            a.href="#";
+            a.onclick=function() {
+              task_type = new TaskDescription(arr[task_types[this.cur_task].task_file]);
+              config = null;
+              if (!confirm("Пропустить настройку?")) {
+                config = task_type.configuration();
+              }
+              addNewWork(task_types[this.cur_task].task_file, config);
+              new_task(task_type);
+            }
+            l.appendChild(a);
+            u.appendChild(l);
+          }
+          check_for_open_work();
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div id="content">
+      <h1> Привет! Этот сайт будет полезен всем тем, кто хочет потренироваться по рассматриваемой теме. </h1>
+      <a href="#" onclick="showListOfWorks();">Список завершённых работ</a></br>
+      <h3> Список заданий доступных для тренировки: </h3>
+      <ul id="list_of_task">
+      </ul>
+    </div>
+  </body>
+</html>
