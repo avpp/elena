@@ -1,0 +1,29 @@
+﻿<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title> Генератор случайных чисел. </title>
+    <script type="text/javascript" src="jquery/jquery.js"></script>
+    <script type="text/javascript">
+      function random(a, b) {
+        r = Math.random();
+        return Math.round(r * (b - a + 1) + a - 0.5);
+      }
+      function random_action() {
+        a = +$("input#min_val").val();
+        b = +$("input#max_val").val();
+        if (a>=b) {
+          alert("Ошибка входных данных");
+        }
+        rslt = $("#result");
+        rslt.text(random(a,b).toString());
+      }
+    </script>
+  </head>
+  <body>
+    <p>Миннимальное значение:<input type="number" id="min_val"/></p>
+    <p>Максимальное значение:<input type="number" id="max_val"/></p>
+    <p><button onclick="random_action();">Сгенерировать</button></p>
+    <h3 id="result"></h3>
+  </body>
+</html>
