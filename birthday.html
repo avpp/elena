@@ -74,8 +74,10 @@ fires[3] = new Fire(364, 84, 40, 80);
 fires[4] = new Fire(475, 102 , 40, 80);
 var c = document.getElementById("myCanvas");
 var image = document.getElementById("img");
-c.width = image.width;
-c.height = image.height;
+image.onload=function(){
+  c.width = image.width;
+  c.height = image.height;
+}
 function draw() {
   var t = Date.now();
   
