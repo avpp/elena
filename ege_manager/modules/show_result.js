@@ -14,6 +14,11 @@
   solver.answers.forEach(function(a){this.max_mark += (a.descr.max_mark || 0); this.mark += (a.descr.mark || 0);}.bind(total));
   $("<span>&nbsp;&nbsp;</span>").appendTo(total_div);
   $("<span></span>").appendTo(total_div).text(total.mark.toString() + "/" + total.max_mark.toString());
+  $("<br></br>").appendTo(total_div);
+  $("<label></label>").appendTo(total_div).text("Затраченное время:");
+  $("<span>&nbsp;&nbsp;&nbsp;</span>").appendTo(total_div);
+  var tst = new Date(solver.total_solve_time);
+  $("<span></span>").appendTo(total_div).text(("00" + tst.getUTCHours()).slice(-2) + ":" + ("00" + tst.getUTCMinutes()).slice(-2) + ":" + ("00" + tst.getUTCSeconds()).slice(-2));
   
   var stat_table = $("<table></table>").appendTo(content_area).addClass("table");
   var stat_table_h = $("<thead></thead>").appendTo(stat_table);
