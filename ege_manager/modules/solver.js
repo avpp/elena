@@ -8,7 +8,9 @@
   this.last_answer_moment = null;
   this.answers = [];
   for (var i in descr.answers) {
-    this.answers.push(new Answer(this, descr.answers[i]));
+    loader.afterload("answer", function(a){
+      this.answers.push(new Answer(this, a));
+    }.bind(this, descr.answers[i]));
   }
   this.status = ("status" in descr) ? ((descr.status == "start") ? "pause" : descr.status) : "init";
   this.total_solve_time = ("total_solve_time" in descr) ? descr.total_solve_time : 0;
