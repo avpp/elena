@@ -1,0 +1,10 @@
+﻿{
+  "line": {
+    "path":"line.js",
+    "autoload":true
+  },
+  "multiline": {
+    "path":"multiline.js",
+    "autoload":true
+  }
+}

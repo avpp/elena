@@ -1,0 +1,6 @@
+{
+  "session": {
+    "path":"jquery.session.js",
+    "autoload":true
+  }
+}

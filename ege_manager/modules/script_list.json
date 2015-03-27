@@ -1,0 +1,39 @@
+﻿{
+  "choose_year_and_subject": {
+    "path":"choose_year_and_subject.js",
+    "func":"choose_year_and_subject"
+  },
+  "show_solver": {
+    "path":"show_solver.js",
+    "func":"load_page"
+  },
+  "show_result": {
+    "path":"show_result.js"
+  },
+  "check_solve": {
+    "path":"check_solve.js"
+  },
+  "create_solver": {
+    "path":"create_solver.js",
+    "func":"load_page"
+  },
+  "answer": {
+    "path":"answer.js",
+    "autoload":true
+  },
+  "solver": {
+    "path":"solver.js",
+    "autoload":true
+  },
+  "jquery": {
+    "type":"dir",
+    "path":"jquery",
+    "list":"script_list.json",
+    "autoload":true
+  },
+  "answer_types": {
+    "type":"dir",
+    "path":"answer_types",
+    "list":"script_list.json"
+  }
+}
