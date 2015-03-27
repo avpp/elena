@@ -37,46 +37,48 @@
       key_array.push(localStorage.key(i));
     }
     key_array = key_array.sort().reverse();
-    for (var i = 0; i < key_array.length; i++) {
-      var k = key_array[i];
-      if (k.startsWith(year.toString()+"_"+subj.toString()+"_")) {
-        var s = Solver.load(k);
-        if (s.status != "stop")
-          s.pause();
-        var row = $("<tr></tr>").appendTo(tbody);
-        row.data("solver", s);
-        $("<td></td>").appendTo(row).text((new Date(s.create_date)).toLocaleString());
-        $("<td></td>").appendTo(row).text(s.comment);
-        var continue_btn = $("<a></a>").appendTo($("<td></td>").appendTo(row)).text("Продолжить").addClass("btn btn-info").click(function(h, c, s){
-          loader.afterload("show_solver", function(header, solver){
-            show_solver(h, this, solver);
-          }.bind(c, h, s))
-        }.bind(undefined, header, content_area, s));
-        if (s.status == "stop")
-          continue_btn.hide();
-        var show_result_btn = $("<a></a>").appendTo($("<td></td>").appendTo(row)).text("Результаты").addClass("btn btn-success").click(function(h, c, s) {
-          loader.afterload("show_result", function(header, solver){
-            show_result(h, this, solver);
-          }.bind(c, h, s))
-        }.bind(undefined, header, content_area, s));
-        var check_btn = $("<a></a>").appendTo($("<td></td>").appendTo(row)).text("Проверить").addClass("btn btn-warning").click(function(h, c, s){
-          loader.afterload("check_solve", function(header, solver){
-            check_solve(h, this, solver);
-          }.bind(c, h, s))
-        }.bind(undefined, header, content_area, s));
-        if (s.status != "stop") {
-          check_btn.hide();
-          show_result_btn.hide();
+    loader.afterload("solver", function(header, content_area, key_array, tbody) {
+      for (var i = 0; i < key_array.length; i++) {
+        var k = key_array[i];
+        if (k.startsWith(year.toString()+"_"+subj.toString()+"_")) {
+          var s = Solver.load(k);
+          if (s.status != "stop")
+            s.pause();
+          var row = $("<tr></tr>").appendTo(tbody);
+          row.data("solver", s);
+          $("<td></td>").appendTo(row).text((new Date(s.create_date)).toLocaleString());
+          $("<td></td>").appendTo(row).text(s.comment);
+          var continue_btn = $("<a></a>").appendTo($("<td></td>").appendTo(row)).text("Продолжить").addClass("btn btn-info").click(function(h, c, s){
+            loader.afterload("show_solver", function(header, solver){
+              show_solver(h, this, solver);
+            }.bind(c, h, s))
+          }.bind(undefined, header, content_area, s));
+          if (s.status == "stop")
+            continue_btn.hide();
+          var show_result_btn = $("<a></a>").appendTo($("<td></td>").appendTo(row)).text("Результаты").addClass("btn btn-success").click(function(h, c, s) {
+            loader.afterload("show_result", function(header, solver){
+              show_result(h, this, solver);
+            }.bind(c, h, s))
+          }.bind(undefined, header, content_area, s));
+          var check_btn = $("<a></a>").appendTo($("<td></td>").appendTo(row)).text("Проверить").addClass("btn btn-warning").click(function(h, c, s){
+            loader.afterload("check_solve", function(header, solver){
+              check_solve(h, this, solver);
+            }.bind(c, h, s))
+          }.bind(undefined, header, content_area, s));
+          if (s.status != "stop") {
+            check_btn.hide();
+            show_result_btn.hide();
+          }
+          $("<a></a>").appendTo($("<td></td>").appendTo(row)).text("Удалить").addClass("btn btn-danger").click( function(){
+            if (!confirm("Вы уверены, что хотите удалить данный тест?"))
+              return;
+            var r = $(this).parent().parent();
+            localStorage.removeItem(r.data("solver").get_key());
+            r.remove();
+          });
         }
-        $("<a></a>").appendTo($("<td></td>").appendTo(row)).text("Удалить").addClass("btn btn-danger").click( function(){
-          if (!confirm("Вы уверены, что хотите удалить данный тест?"))
-            return;
-          var r = $(this).parent().parent();
-          localStorage.removeItem(r.data("solver").get_key());
-          r.remove();
-        });
       }
-    }
+    }.bind(undefined, header, content_area, key_array, tbody));
   }.bind(choose_subj, choose_year, exist_list));
   $("<label></label>").appendTo(input_area).text("Комментарий: ");
   $("<span>&nbsp;&nbsp;</span>").appendTo(input_area);
