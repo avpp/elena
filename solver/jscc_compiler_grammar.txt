@@ -1,0 +1,119 @@
+[*
+  Parser = function() {
+    this.variables = [];
+    this.defineVariable = function(name){
+      if (this.variables.indexOf(name) == -1)
+        this.variables.push(name);
+    };
+    
+    this.expressions = [];
+    this.clearAll = function() {
+      this.expressions = [];
+      this.variables = [];
+    }
+    this.addExpression = function(text){
+      this.expressions.push(text);
+    }
+*]
+!   ' |\t|\r|\n' ;
+
+'\('
+'\)'
+
+'[0-1]'                         Constant
+'[A-Za-z_][A-Za-z0-9_]*'	Identifier    [* this.defineVariable(%match) *]
+'(=|==)'                        EqualStat
+'(\->|=>|>)'                    ConseqStat
+'(\+|\||\|\||\\/)'              OrStat
+'(\*|&|&&|/\\)'                 AndStat
+'(\!|\-|~)'                     NegStat
+;
+##
+
+p: equalEx [* this.addExpression(%1) *]
+   ;
+
+equalEx: equalEx EqualStat conseqEx     [* %% = "(" + %1.toString() + "==" + %3.toString() + ")" *]
+         | conseqEx
+         ;
+
+conseqEx: conseqEx ConseqStat orEx      [* %% = "(!(" + %1.toString() + ") || " + %3.toString() + ")" *]
+         | orEx
+         ;
+
+orEx:    orEx OrStat andEx              [* %% = "(" + %1.toString() + " || " + %3.toString() + ")" *]
+         | andEx
+         ;
+
+andEx:   andEx AndStat negEx            [* %% = "(" + %1.toString() + " && " + %3.toString() + ")" *]
+         | negEx
+         ;
+
+negEx:   NegStat var_constEx            [* %% = "(!(" + %2.toString() + "))" *]
+         | valueEx
+         ;
+
+var_constEx: Constant
+             | Identifier
+         ;
+
+valueEx: '(' equalEx ')'              [* %% = "(" + %2.toString() + ")" *]
+          | var_constEx
+         ;
+
+[*
+
+  __lex = __lex.bind(this);
+  __parse = __parse.bind(this);
+  this.parseOne = function(str){
+    var error_offsets = new Array();
+    var error_lookaheads = new Array();
+    var error_count = 0;
+    if( ( error_count = __parse( str, error_offsets, error_lookaheads ) ) > 0 ) {
+      var errstr = new String();
+      for( var i = 0; i < error_count; i++ )
+        errstr += "Parse error in line " + 
+           ( str.substr( 0, error_offsets[i] ).match( /\n/g ) ? str.substr( 0, error_offsets[i] ).match( /\n/g ).length : 1 ) + 
+           " near \"" + str.substr( error_offsets[i] ) + "\", expecting \"" + error_lookaheads[i].join() + "\"\n" ;
+      return( errstr );
+    }
+    return null;
+  };
+  
+  this.error_text = "";
+  this.solve = function(text){
+    this.clearAll();
+    this.error_text = ""
+    expr = text.split(/[\r\n;]+/).filter(function(e){return e});;
+    if (expr.length > 0) {
+      var err = null;
+      for (var i = 0; i < expr.length; i++) {
+        if ((err = this.parseOne(expr[i])) !== null) {
+          this.error_text = "Error in line: \"" + expr[i] + "\"\n\n" + err;
+          return -1;
+        }
+      }
+      if (this.variables.length > 30) {
+        this.error_text = "Too many variables";
+        return -1;
+      }
+      this.variables = this.variables.sort(function(a, b){return b.length - a.length;});
+      
+      var total_check_string = "(1==1)";
+      for (var i = 0; i < this.expressions.length; i++) {
+        total_check_string += "&&((" + this.expressions[i] + ") == (1==1))";
+      }
+      for (var i = 0; i < this.variables.length; i++) {
+        var re = new RegExp(this.variables[i], 'g');
+        var re_t = "(($$>>" + i.toString() + ")&1)";
+        total_check_string = total_check_string.replace(re, re_t);
+      }
+      var func = new Function("", "var a = 0; for(var $$ = 0; $$ < " + (1 << this.variables.length).toString() + "; $$++) { if (" + total_check_string + ") a++;} return a;");
+      return func();
+    } else {
+      this.error_text = "Emoty string!"
+      return -1;
+    }
+  }
+};
+*]
