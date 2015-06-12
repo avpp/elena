@@ -1,0 +1,151 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Логические выражения</title>
+    <script src="./jquery/jquery.js"></script>
+    <script type="text/javascript">
+      var functions = [
+        {
+          name: "A",
+          f: function(a, b){return a;}
+        },
+        {
+          name: "B",
+          f: function(a, b){return b;}
+        },
+        {
+          name: "Not(A)",
+          f: function(a, b) {return 0 + !a;}
+        },
+        {
+          name: "Not(B)",
+          f: function(a, b) {return 0 + !b;}
+        },
+        {
+          name: "And(A, B)",
+          f: function(a, b){return a && b;}
+        },
+        {
+          name: "Or(A, B)",
+          f: function(a, b){return a || b;}
+        },
+        {
+          name: "Xor(A, B)",
+          f: function(a, b){return 0 + ((a && !b) || (b && !a));}
+        },
+        {
+          name: "A->B",
+          f: function(a, b){return 0 + !(a & !b);}
+        },
+        {
+          name: "B->A",
+          f: function(a, b){return 0 + !(b & !a);}
+        },
+        {
+          name: "A<=>B",
+          f: function(a, b){return 0 + !((a && !b) || (b && !a));}
+        },
+        {
+          name: "0",
+          f: function(a, b){return 0;}
+        },
+        {
+          name: "1",
+          f: function(a, b){return 1;}
+        }
+      ]
+      function draw(where, what){
+        where = $(where);
+        where.attr("width", "100vw");
+        where.attr("height", "100vh");
+        var w = where[0].width;
+        var h = where[0].height;
+        var r = Math.min(h/3, w/5);
+        var left = {x: w/2 - 3*r/5, y: h/2};
+        var right = {x: w/2 + 3*r/5, y: h/2};
+        ctx = where[0].getContext('2d');
+        ctx.clearRect(0, 0, w, h);
+        
+        TrueColor = "#66FF66";
+        FalseColor = "#FF6666"
+        
+        //ctx.globalAlpha = 0.4;
+        ctx.beginPath();
+        ctx.fillStyle = (what.f(0, 0)) ? TrueColor : FalseColor;
+        ctx.rect(0, 0, w, h);
+        ctx.closePath();
+        ctx.fill();
+        
+        var angle = Math.acos(0.6);
+        
+        ctx.beginPath();
+        ctx.fillStyle = (what.f(1, 0)) ? TrueColor : FalseColor;
+        ctx.arc(left.x, left.y, r, -angle,  angle, true);
+        ctx.arc(right.x, right.y, r, Math.PI - angle, Math.PI + angle, false);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.beginPath();
+        ctx.fillStyle = (what.f(1, 1)) ? TrueColor : FalseColor;
+        ctx.arc(left.x, left.y, r, -angle,  angle, false);
+        ctx.arc(right.x, right.y, r, Math.PI - angle, Math.PI + angle, false);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.beginPath();
+        ctx.fillStyle = (what.f(0, 1)) ? TrueColor : FalseColor;
+        ctx.arc(right.x, right.y, r, -Math.PI+angle, Math.PI-angle, false);
+        ctx.arc(left.x, left.y, r, angle, -angle, true);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.globalAlpha = 1;
+        
+        ctx.beginPath();
+        ctx.lineWidth = 2;
+        ctx.arc(left.x, left.y, r, 0, Math.PI*2, true);
+        ctx.closePath();
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.lineWidth = 2;
+        ctx.arc(right.x, right.y, r, 0, Math.PI*2, true);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.lineWidth = 1;
+      }
+      $(function(){
+        var table = $("#f_table");
+        var thead = $("<thead></thead>").appendTo(table);
+        var tbody = $("<tbody></tbody>").appendTo(table);
+        var hrow = $("<tr></tr>").appendTo(thead);
+        for (var i in functions) {
+          var b = $("<a></a>").appendTo($("<th></th>").appendTo(hrow)).text(functions[i].name);
+          b.css({
+            color: "#0000AA"
+          });
+          b.hover(function(){$(this).css({cursor: "pointer"});}, function(){$(this).css({cursor: "default"});});
+          b.data("f", i);
+          b.click(function(where, what){
+            draw($(where), what);
+          }.bind(b, $("canvas"), functions[i]));
+        }
+        for (var a = 0; a <= 1; a++){
+          for (var b = 0; b <= 1; b++) {
+            var r = $("<tr></tr>").appendTo(tbody);
+            for (var i in functions) {
+              $("<td></td>").appendTo(r).text(functions[i].f(a, b));
+            }
+          }
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <table border=1 id="f_table">
+    </table>
+    <canvas>
+    </canvas>
+  </body>
+</html>
