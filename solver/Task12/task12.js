@@ -60,11 +60,4 @@
       }
     }.bind(undefined, t));
   };
-  this.solve = function(text) {
-    var p = new Parser();
-    var r = p.solve(text);
-    if (r < 0)
-      return p.error_text;
-    return r;
-  };
 };
