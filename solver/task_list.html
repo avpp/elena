@@ -6,6 +6,22 @@
     <script src="./../jquery/jquery.js"></script>
     <script src="./../jquery/jquery.selection.js"></script>
     <script src="./compiler_core.js"></script>
+    <style>
+      button {
+        min-width: 50px;
+        min-height: 40px;
+        margin: 3px;
+      }
+      input[type="number"] {
+        max-width:40px;
+        min-height: 20px;
+        margin: 3px;
+      }
+      input[type="radio"] {
+        min-width: 20px;
+        min-height: 20px;
+      }
+    </style>
     <script>
       Task23 = function(){
         this.generate_input = function(base) {
@@ -18,34 +34,49 @@
             if (confirm("Вы уверены, что хотите очистить поле ввода?"))
               $(this).parents("div#task").find("textarea").val("");
           });
-          $("<button></button>").appendTo(control_btns).text("<---").click(function(){
-            var el = $(this).parents("div#task").find("textarea");
-            var s = el.selection('getPos').start;
-            if (s > 0) {
-              el.selection('setPos', {start: s-1, end: s});
-              el.selection('replace', {text: ""});
+          $("<button></button>").appendTo(control_btns).text("Деактивировать").data("active", true).click(function(){
+            var r = null;
+            $(this).data("active", r = !$(this).data("active"));
+            var ta = $($(this).parents("div#task").find("textarea"));
+            $(this).text((r)?"Деактивировать":"Активировать");
+            if (!r) {
+              ta.attr("disabled", true);
+            } else {
+              ta.removeAttr("disabled");
             }
           });
-          var copy_control = $("<div></div>").appendTo(base);
-          $("<label></label>").appendTo(copy_control).text("Копировать строку № ");
-          $("<input name=\"s_num\" type=\"number\" min=1></input>").appendTo(copy_control).val("1");
-          $("<label></label>").appendTo(copy_control).text(" со сдвигом на ");
-          $("<input name=\"shift\" type=\"number\" min=-50 max=50></input>").appendTo(copy_control).val("1");
-          $("<br>").appendTo(copy_control);
-          $("<input type=\"radio\" name=\"shift_type\" checked></input>").appendTo(copy_control).val("char");
-          $("<label></label>").appendTo(copy_control).text("названия /");
-          $("<input type=\"radio\" name=\"shift_type\"></input>").appendTo(copy_control).val("num");
-          $("<label></label>").appendTo(copy_control).text("номера ");
-          $("<input name=\"copy\" type=\"number\" min=1></input>").appendTo(copy_control).val("1");
-          $("<label></label>").appendTo(copy_control).text(" раз(а).");
-          $("<button></button>").appendTo(copy_control).text("Применить").click(function(){
-            var p = $(this).parent();
+          
+          var copy_control = $("<table></table>").appendTo(base);
+          var tr = $("<tr></tr>").appendTo(copy_control);
+          var td = $("<td></td>").appendTo(tr);
+          $("<label></label>").appendTo(td).text("Копировать строку № ");
+          var td = $("<td></td>").appendTo(tr);
+          $("<input name=\"s_num\" type=\"number\" min=1></input>").appendTo(td).val("1");
+          tr = $("<tr></tr>").appendTo(copy_control);
+          td = $("<td></td>").appendTo(tr);
+          $("<label></label>").appendTo(td).text(" со сдвигом на ");
+          td = $("<td></td>").appendTo(tr);
+          $("<input name=\"shift\" type=\"number\" min=-50 max=50></input>").appendTo(td).val("1");
+          tr = $("<tr></tr>").appendTo(copy_control);
+          td = $("<td></td>").appendTo(tr);
+          $("<input type=\"radio\" name=\"shift_type\" checked></input>").appendTo(td).val("char");
+          $("<label></label>").appendTo(td).text("названия /");
+          td = $("<td></td>").appendTo(tr);
+          $("<input type=\"radio\" name=\"shift_type\"></input>").appendTo(td).val("num");
+          $("<label></label>").appendTo(td).text("номера ");
+          tr = $("<tr></tr>").appendTo(copy_control);
+          td = $("<td></td>").appendTo(tr);
+          $("<input name=\"copy\" type=\"number\" min=1></input>").appendTo(td).val("1");
+          $("<label></label>").appendTo(td).text(" раз(а).");
+          td = $("<td></td>").appendTo(tr);
+          $("<button></button>").appendTo(td).text("Применить").click(function(){
+            var p = $(this).parents("table");
             var s_num = +p.find("input[name=s_num]").val();
             var shift = +p.find("input[name=shift]").val();
             var copy = +p.find("input[name=copy]").val();
             var type = p.find("input:checked").val();
             
-            var text_el = p.parent().find("textarea")
+            var text_el = p.parents("div#task").find("textarea")
             var text = text_el.val();
             var lines = text.split(/[\n\r]+/).filter(function(e){return e});
             if (s_num > lines.length) {
@@ -76,6 +107,16 @@
               text_el.val(text_el.val() + "\n" + line);
             }
           });
+          $("<button></button>").appendTo(base).text("<---").click(function(){
+            var el = $(this).parents("div#task").find("textarea");
+            var s = el.selection('getPos').start;
+            if (s > 0) {
+              el.selection('setPos', {start: s-1, end: s});
+              el.selection('replace', {text: ""});
+            }
+          });
+          
+          $("<br>").appendTo(base);
           var input = $("<textarea rows=5 cols=50></textarea>").appendTo(base);
           var input_to_area = function(){
             var el = $($(this).parents("div#task").find("textarea").first());
@@ -89,14 +130,17 @@
           var input_helper = $("<div></div>").appendTo(base);
           $("<button></button>").appendTo(input_helper).text("(").addClass("input-helper").data("helper", "(");
           $("<button></button>").appendTo(input_helper).text(")").addClass("input-helper").data("helper", ")");
-          $("<button></button>").appendTo(input_helper).text("And, *, &, /\\").addClass("input-helper").data("helper", "/\\");
-          $("<button></button>").appendTo(input_helper).text("Or, +, |, \\/").addClass("input-helper").data("helper", "\\/");
-          $("<button></button>").appendTo(input_helper).text("Not, !, ¬").addClass("input-helper").data("helper", "-");
-          $("<button></button>").appendTo(input_helper).text("Conseq, ->, =>").addClass("input-helper").data("helper", "->");
-          $("<button></button>").appendTo(input_helper).text("Equal, =, ==").addClass("input-helper").data("helper", "=");
           $("<button></button>").appendTo(input_helper).text("False, 0").addClass("input-helper").data("helper", "0");
           $("<button></button>").appendTo(input_helper).text("True, 1").addClass("input-helper").data("helper", "1");
           $("<button></button>").appendTo(input_helper).text("New line").addClass("input-helper").data("helper", "\n");
+          $("<br>").appendTo(input_helper);
+          $("<button></button>").appendTo(input_helper).text("And, *, &, /\\").addClass("input-helper").data("helper", "/\\");
+          $("<button></button>").appendTo(input_helper).text("Or, +, |, \\/").addClass("input-helper").data("helper", "\\/");
+          $("<button></button>").appendTo(input_helper).text("Not, !, ¬").addClass("input-helper").data("helper", "-");
+          $("<br>").appendTo(input_helper);
+          $("<button></button>").appendTo(input_helper).text("Conseq, ->, =>").addClass("input-helper").data("helper", "->");
+          $("<button></button>").appendTo(input_helper).text("Equal, =, ==").addClass("input-helper").data("helper", "=");
+          $("<br>").appendTo(input_helper);
           $("<br>").appendTo(input_helper);
           $("<label></label>").appendTo(input_helper).text("Переменные: ");
           $("<button></button>").appendTo(input_helper).text("Предыдущая").click(function(){
@@ -114,6 +158,8 @@
             el.empty();
             for (var i = 1; i <= 10; i++) {
               $("<button></button>").appendTo(el).text($(this).val().toString() + i).addClass("input-helper").data("helper", $(this).val().toString() + i).click(input_to_area);
+              if (i % 5 == 0)
+                $("<br>").appendTo(el);
             }
           });
           $("<button></button>").appendTo(input_helper).text("Следующая").click(function(){
