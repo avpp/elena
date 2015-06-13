@@ -1,0 +1,14 @@
+﻿button {
+        min-width: 50px;
+        min-height: 40px;
+        margin: 3px;
+}
+input[type="number"] {
+  max-width:40px;
+  min-height: 20px;
+  margin: 3px;
+}
+input[type="radio"] {
+  min-width: 20px;
+  min-height: 20px;
+}
