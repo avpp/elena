@@ -1,0 +1,9 @@
+﻿CACHE MANIFEST
+#Version 1.
+CACHE:
+./task23.html
+./task23.js
+./task23.css
+./compiler_core.js
+./../../jquery/jquery.js
+./../../jquery/jquery.selection.js
