@@ -1,47 +1,78 @@
-﻿function addToLastWork(t) {
-  wl = $.cookie("workList");
-  if (wl == null || wl == undefined)
-    return;
-  wl = JSON.parse(wl);
-  wl[wl.length-1].tasks.push(t);
-  $.cookie("workList", JSON.stringify(wl));
-}
+﻿WorkManager = (function() {
+  var instance;
+  return function WorkManager_singletone() {
+    if (instance)
+      return instance;
 
-function changeLastTaskInLastWork(t) {
-  wl = $.cookie("workList");
-  if (wl == null || wl == undefined)
-    return;
-  wl = JSON.parse(wl);
-  wl[wl.length-1].tasks[wl[wl.length-1].tasks.length-1] = t;
-  $.cookie("workList", JSON.stringify(wl));
-}
+    this.addToLastWork = function (t) {
+      if (olw == null)
+        return;
+      var w = JSON.parse(localStorage.getItem(olw));
+      w.tasks.push(t);
+      localStorage.setItem(olw, JSON.stringify(w));
+    }
 
-function addNewWork(tt_name, config) {
-  wl = $.cookie("workList");
-  if (wl == null || wl == undefined)
-    wl = [];
-  else
-    wl = JSON.parse(wl);
-  if (config == null)
-    config = {};
-  w = {"name":tt_name, "start_at":Date.now(), "tasks":[], "config":config};
-  wl.push(w);
-  $.cookie("workList", JSON.stringify(wl));
-}
+    this.changeLastTaskInLastWork = function(t) {
+      if (olw == null)
+        return;
+      var w = JSON.parse(localStorage.getItem(olw));
+      w.tasks[w.tasks.length-1] = t;
+      localStorage.setItem(olw, JSON.stringify(w));
+    }
 
-function endLastWork() {
-  wl = $.cookie("workList");
-  if (wl == null || wl == undefined)
-    return;
-  wl = JSON.parse(wl);
-  wl[wl.length-1].end_at=Date.now();
-  $.cookie("workList", JSON.stringify(wl));
-}
+    this.addNewWork = function(tt_name, config) {
+      if (olw != null)
+        throw new Error("Last work not end.");
+      if (config == null)
+        config = {};
+      w = {"name":tt_name, "start_at":Date.now(), "tasks":[], "config":config};
+      localStorage.setItem(olw = lw = ("work_"+w.start_at.toString()), JSON.stringify(w));
+    }
 
-function getLastWork() {
-  wl = $.cookie("workList");
-  if (wl == null || wl == undefined)
-    return null;
-  wl = JSON.parse(wl);
-  return wl[wl.length-1];
-}
+    this.endLastWork = function() {
+      if (olw == null)
+        return;
+      var w = JSON.parse(localStorage.getItem(olw));
+      w.end_at = Date.now();
+      localStorage.setItem(olw, JSON.stringify(w));
+      olw = null;
+    }
+
+    this.getLastWork = function(open) {
+      if (open === undefined || open === null)
+        open = true;
+      if (open && (olw == null))
+        return;
+      return JSON.parse(localStorage.getItem(lw));
+    }
+
+    this.getAllWorks = function() {
+      wl = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k.startsWith("work_"))
+          wl.push(JSON.parse(localStorage.getItem(k)));
+      }
+      return wl.sort(function(a, b){return a.start_at - b.start_at});
+    }
+
+    this.removeWorkByStartTime = function(t) {
+      localStorage.removeItem("work_"+t.toString());
+    }
+    
+    var lw = this.getAllWorks().pop();
+    var olw = lw;
+    if (olw === undefined || olw === null)
+      olw = null;
+    else if (olw.end_at == undefined || olw.end_at == null)
+      olw = "work_"+olw.start_at.toString();
+    else
+      olw = null;
+  
+    if (this && this.constructor === WorkManager_singletone) {
+			instance = this;
+		} else {
+			return new WorkManager_singletone();
+		}
+  }
+}());
