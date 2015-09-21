@@ -60,14 +60,16 @@
       localStorage.removeItem("work_"+t.toString());
     }
     
-    var lw = this.getAllWorks().pop();
+    var lw = this.getAllWorks();
+    if (lw.length === 0)
+      lw = null;
+    else {
+      lw = "work_" + lw[lw.length-1].start_at.toString();
+    }
     var olw = lw;
-    if (olw === undefined || olw === null)
-      olw = null;
-    else if (olw.end_at == undefined || olw.end_at == null)
-      olw = "work_"+olw.start_at.toString();
-    else
-      olw = null;
+    if (olw != null)
+      if (!(olw.end_at === null || olw.end_at === undefined))
+        olw = null;
   
     if (this && this.constructor === WorkManager_singletone) {
 			instance = this;
