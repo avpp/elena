@@ -15,8 +15,12 @@
         content = document.getElementById("content");
         content.innerHTML = "";
         back_href = document.createElement("a");
-        back_href.href = "main.html";
+        back_href.href = "";
         back_href.innerHTML = "На главную";
+        back_href.onclick = function(){
+          show_main_page();
+          return false;
+        };
         content.appendChild(back_href);
         content.appendChild(document.createElement("br"));
         content.appendChild(document.createElement("br"));
@@ -67,6 +71,7 @@
           tsk.result = tt.check(tsk);
           WM.changeLastTaskInLastWork(tsk);
           new_task(tt);
+          return false;
         }
         
         endButton = document.createElement("button");
@@ -77,6 +82,7 @@
           WM.changeLastTaskInLastWork(tsk);
           WM.endLastWork();
           showOneOfWork(WM.getLastWork(false));
+          return false;
         }
         
         content.appendChild(nextButton);
@@ -87,20 +93,25 @@
         content = document.getElementById("content");
         content.innerHTML = "";
         back_href = document.createElement("a");
-        back_href.href = "main.html";
         back_href.innerHTML = "На главную";
+        back_href.href = "";
+        back_href.onclick = function(){
+          show_main_page();
+          return false;
+        };
         content.appendChild(back_href);
         content.appendChild(document.createElement("br"));
         content.appendChild(document.createElement("br"));
         wl = WM.getAllWorks();
         for (var i = 0; i < wl.length; i++) {
           a = document.createElement("a");
-          a.href="#";
+          a.href="";
           a.work=JSON.stringify(wl[i]);
           a.innerHTML = task_types.find(function (q) { return q.task_file == wl[i].name;}).name + "   [" + new Date(wl[i].start_at) + "]";
           a.onclick = function() {
             w = JSON.parse(this.work);
             showOneOfWork(w);
+            return false;
           }
           content.appendChild(a);
           delButton = document.createElement("button");
@@ -108,9 +119,10 @@
           delButton.innerHTML = "Удалить";
           delButton.onclick = function() {
             if (!confirm("Вы уверены, что хотите удалить результаты этой работы?"))
-              return;
+              return false;
             WM.removeWorkByStartTime(this.num);
             showListOfWorks();
+            return false;
           }
           content.appendChild(delButton);
           content.appendChild(document.createElement("br"));
@@ -130,8 +142,14 @@
           new_task(task_type);
       }
       
-      $(function (){
-        WM = WorkManager();
+      function show_main_page() {
+        var content = $("#content");
+        content.empty();
+        $("<h1></h1>").appendTo(content).text("Привет! Этот сайт будет полезен всем тем, кто хочет потренироваться по рассматриваемой теме.");
+        $("<a href=\"\" onclick=\"showListOfWorks(); return false;\"></a>").appendTo($("<p></p>").appendTo(content)).text("Список завершённых работ");
+        $("<a href=\"random.html\"></a>").appendTo($("<p></p>").appendTo(content)).text("Генератор случайных чисел");
+        $("<h3></h3>").appendTo(content).text("Список заданий доступных для тренировки:");
+        $("<ul id=\"list_of_task\"></ul>").appendTo(content);
         $.getJSON("./tasks.json", function (data)
         {
           task_types = data;
@@ -150,7 +168,7 @@
             a = document.createElement("a");
             a.innerHTML = task_types[i].name;
             a.cur_task = i;
-            a.href="#";
+            a.href="";
             a.onclick=function() {
               task_type = new TaskDescription(arr[task_types[this.cur_task].task_file]);
               config = null;
@@ -159,23 +177,24 @@
               }
               WM.addNewWork(task_types[this.cur_task].task_file, config);
               new_task(task_type);
+              return false;
             }
             l.appendChild(a);
             u.appendChild(l);
           }
           check_for_open_work();
         });
+      }
+      
+      $(function (){
+        WM = WorkManager();
+        show_main_page();
       });
+      
     </script>
   </head>
   <body>
     <div id="content">
-      <h1> Привет! Этот сайт будет полезен всем тем, кто хочет потренироваться по рассматриваемой теме. </h1>
-      <p><a href="#" onclick="showListOfWorks();">Список завершённых работ</a></p>
-      <p><a href="random.html">Генератор случайных чисел</a></p>
-      <h3> Список заданий доступных для тренировки: </h3>
-      <ul id="list_of_task">
-      </ul>
     </div>
   </body>
 </html>
